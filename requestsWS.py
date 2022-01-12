@@ -23,15 +23,15 @@ def get(ws, encoding=None):
         return JSON.loads(responseFormatted)
 
 
-def post(ws, payload=None, json=None):
-    if payload == None and json == None:
-        print(f"requestWS | Error #1: payload or json is needed")
+def post(ws, data=None, json=None):
+    if data == None and json == None:
+        print(f"requestWS | Error #1: data or json is needed")
         exit()
 
-    payloadFormatted = JSON.dumps(payload) if type(payload) == dict else payload if payload != None else JSON.dumps(
+    dataFormatted = JSON.dumps(data) if type(data) == dict else data if data != None else JSON.dumps(
         json)
 
-    ws.send(payloadFormatted)
+    ws.send(dataFormatted)
 
     def response(compression=None, encoding=None):
         encodingFormated = "utf8" if encoding == None else encoding
@@ -68,16 +68,16 @@ class Session:
             return JSON.loads(responseFormatted)
 
     class post:
-        def __init__(self, payload=None, json=None, waitForResponse=True, compression=None, encoding=None):
+        def __init__(self, data=None, json=None, waitForResponse=True, compression=None, encoding=None):
             global WS
             self.WS = WS
-            if payload == None and json == None:
-                print(f"RequestWS | Error #1: payload or json is needed")
+            if data == None and json == None:
+                print(f"RequestWS | Error #1: data or json is needed")
                 exit()
 
-            payloadFormatted = JSON.dumps(payload) if type(payload) == dict else payload if payload != None else JSON.dumps(json)
+            dataFormatted = JSON.dumps(data) if type(data) == dict else data if data != None else JSON.dumps(json)
 
-            self.WS.send(payloadFormatted)
+            self.WS.send(dataFormatted)
 
             if waitForResponse:
                 encodingFormated = "utf8" if encoding == None else encoding
