@@ -3,6 +3,13 @@ import websocket #pip install websocket-client
 import gzip
 import json as JSON
 
+import time
+import timeout_decorator
+
+import threading
+
+import difflib
+
 def iniziateConnection(wsURL):
     ws = websocket.WebSocket()
     ws.connect(wsURL)
@@ -12,92 +19,95 @@ def iniziateConnection(wsURL):
 def closeConnection(ws):
     ws.close()
 
+ws = websocket.WebSocket()
+wsData = {"CURRENT_URL": None}
 
-def get(ws, encoding=None):
-    if encoding == "gzip":
-        responseFormatted = str(gzip.decompress(ws.recv()), encoding="utf8")
-    else:
-        responseFormatted = str(ws.recv(), encoding="utf8")
+lastResponse = ""
+class get:
+    def __init__(self, wsUrl, timeout=None):
+        global lastResponse
 
-    def json():
-        return JSON.loads(responseFormatted)
+        self.Error = False
+        if wsUrl != wsData["CURRENT_URL"]:
+            ws.connect(wsUrl)
 
+        @timeout_decorator.timeout(timeout if timeout != 0 else 10**-100)
+        def funcWaitForResponse():
+            while True:
+                response = ws.recv()
+                #print('\n'.join(difflib.ndiff([response], [lastResponse])))
+                if lastResponse != response:
+                    return response
 
-def post(ws, data=None, json=None):
-    if data == None and json == None:
-        print(f"requestWS | Error #1: data or json is needed")
-        exit()
+        self.text = funcWaitForResponse()
+        lastResponse = self.text
 
-    dataFormatted = JSON.dumps(data) if type(data) == dict else data if data != None else JSON.dumps(
-        json)
-
-    ws.send(dataFormatted)
-
-    def response(compression=None, encoding=None):
-        encodingFormated = "utf8" if encoding == None else encoding
-        if compression == "gzip":
-            responseFormatted = str(gzip.decompress(ws.recv()), encoding=encodingFormated)
+    def json(self):
+        if not self.Error:
+            return JSON.loads(self.text)
         else:
-            responseFormatted = str(ws.recv(), encoding=encodingFormated)
+            return {"ERROR_MESSAGE": self.text}
 
-        def json():
-            return JSON.loads(responseFormatted)
+class post:
+    def __init__(self, wsUrl, data=None, json=None, waitForResponse=True, timeout=None):
+        global lastResponse
 
-WS = websocket.WebSocket()
-class Session:
-    def __init__(self, wsURL, proxy=None):
-        self.Proxy = proxy
-        self.WS = websocket.WebSocket()
-        self.WS.connect(wsURL)
-        global WS
-        WS = self.WS
-        print(self.WS.recv())
+        self.Error = False
 
-    def closeConnection(self):
-        self.WS.close()
+        if wsUrl != wsData["CURRENT_URL"]:
+            ws.connect(wsUrl)
 
-    def get(self, encoding=None):
-        if encoding == "gzip":
-            responseFormatted = str(gzip.decompress(self.WS.recv()), encoding="utf8")
+        if data == None and json == None:
+            self.text = "RequestsWS | Error #1: data or json is needed"
+            self.Error = True
+            return
+
+        @timeout_decorator.timeout(timeout if timeout != 0 else 10**-100)
+        def funcWaitForResponse():
+            while True:
+                response = ws.recv()
+                #print('\n'.join(difflib.ndiff([response], [lastResponse])))
+                if lastResponse != response:
+                    print("Not the same")
+                    return response
+
+        if waitForResponse:
+            try:
+                self.text = funcWaitForResponse()
+
+                lastResponse = self.text
+            except timeout_decorator.timeout_decorator.TimeoutError:
+                self.text = "RequestsWS | Error #2: request timed out"
+                self.Error = True
+                return
+
+
+        dataFormatted = JSON.dumps(data) if type(data) == dict else data if data != None else JSON.dumps(json)
+
+        if waitForResponse:
+            ws.send(dataFormatted)
+            self.text = ws.recv()
+
+    def json(self):
+        if not self.Error:
+            return JSON.loads(self.text)
         else:
-            responseFormatted = str(self.WS.recv(), encoding="utf8")
+            return {"ERROR_MESSAGE": self.text}
 
-        return responseFormatted
+def keepWSConnection(wsUrl, interval, payload, ws):
+    while True:
+        if wsData["CURRENT_URL"] == wsUrl:
+            time.sleep(interval)
+            ws.send(payload)
+        else:
+            print("New website, stopping the pings")
 
-        def json():
-            return JSON.loads(responseFormatted)
+class keepConnection:
+    def __init__(self, wsUrl, interval, data=None, json=None):
+        if data == None and json == None:
+            self.text = "RequestsWS | Error #1: data or json is needed"
+            self.Error = True
+            return
 
-    class post:
-        def __init__(self, data=None, json=None, waitForResponse=True, compression=None, encoding=None):
-            global WS
-            self.WS = WS
-            if data == None and json == None:
-                print(f"RequestWS | Error #1: data or json is needed")
-                exit()
-
-            dataFormatted = JSON.dumps(data) if type(data) == dict else data if data != None else JSON.dumps(json)
-
-            self.WS.send(dataFormatted)
-
-            if waitForResponse:
-                encodingFormated = "utf8" if encoding == None else encoding
-                if compression == "gzip":
-                    self.text = str(gzip.decompress(self.WS.recv()), encoding=encodingFormated)
-                elif compression == "json":
-                    self.json = JSON.loads(str(self.WS.recv()))
-                else:
-                    self.text = str(self.WS.recv())
-
-        def response(self, compression=None, encoding=None):
-            encodingFormated = "utf8" if encoding == None else encoding
-            if compression == "gzip":
-                responseFormatted = str(gzip.decompress(self.WS.recv()), encoding=encodingFormated)
-            elif compression == "json":
-                responseFormatted = JSON.loads(str(self.WS.recv()))
-            else:
-                responseFormatted = str(self.WS.recv())
-
-            return responseFormatted
-
-        def json(self):
-            return JSON.loads(self.responseFormatted)
+        dataFormatted = JSON.dumps(data) if type(data) == dict else data if data != None else JSON.dumps(json)
+        threading._start_new_thread(keepConnection, (wsUrl, interval, dataFormatted, ws))
