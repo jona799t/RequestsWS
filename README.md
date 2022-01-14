@@ -23,6 +23,7 @@ requestsWS.keepConnection('ws://localhost:8765', interval=20, json=payload)
 
 # TO DO
 Multiple connections at once (Use array instead of string)
+Add string support for identifier (Check if identifier in string)
 
 # Documentation
 Comming soon!
