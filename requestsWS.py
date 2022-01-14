@@ -1,113 +1,103 @@
-import websocket #pip install websocket-client
-
-import gzip
+from websocket import create_connection
 import json as JSON
 
-import time
+import threading
+from cancelable import time
 import timeout_decorator
 
-import threading
 
-import difflib
-
-def iniziateConnection(wsURL):
-    ws = websocket.WebSocket()
-    ws.connect(wsURL)
-    return websocket.WebSocket()
+def send_json_request(ws, request):
+    ws.send(JSON.dumps(request))
 
 
-def closeConnection(ws):
-    ws.close()
+def recieve_json_response(ws):
+    response = ws.recv()
+    if response:
+        return JSON.loads(response)
 
-ws = websocket.WebSocket()
+ws = None
 wsData = {"CURRENT_URL": None}
 
-lastResponse = ""
-class get:
-    def __init__(self, wsUrl, timeout=None):
-        global lastResponse
+connectionsKept = []
 
+class get:
+    def __init__(self, wsUrl, identifier=None, timeout=None):
+        global ws
         self.Error = False
         if wsUrl != wsData["CURRENT_URL"]:
-            ws.connect(wsUrl)
+            wsData["CURRENT_URL"] = wsUrl
+            ws = create_connection(wsUrl)
 
-        @timeout_decorator.timeout(timeout if timeout != 0 else 10**-100)
-        def funcWaitForResponse():
+        if identifier != None:
+            for identifierKey, identifierValue in identifier.items():
+                key = identifierKey
+                value = identifierValue
+
+        #@timeout_decorator.timeout(timeout if timeout != 0 else 10**-100) | Removed for now as it causes problems
+        def funcWaitForResponse(identifier):
             while True:
                 response = ws.recv()
-                #print('\n'.join(difflib.ndiff([response], [lastResponse])))
-                if lastResponse != response:
-                    return response
-
-        self.text = funcWaitForResponse()
-        lastResponse = self.text
+                if response:
+                    if identifier != None:
+                        if JSON.loads(response)[key] == value:
+                            return response
+                    else:
+                        return response
+        self.text = funcWaitForResponse(identifier)
 
     def json(self):
-        if not self.Error:
-            return JSON.loads(self.text)
-        else:
-            return {"ERROR_MESSAGE": self.text}
+        return JSON.loads(self.text)
 
 class post:
-    def __init__(self, wsUrl, data=None, json=None, waitForResponse=True, timeout=None):
-        global lastResponse
-
+    def __init__(self, wsUrl, json, identifier=None, timeout=None):
+        global ws
         self.Error = False
-
         if wsUrl != wsData["CURRENT_URL"]:
-            ws.connect(wsUrl)
+            wsData["CURRENT_URL"] = wsUrl
+            ws = create_connection(wsUrl)
 
-        if data == None and json == None:
-            self.text = "RequestsWS | Error #1: data or json is needed"
-            self.Error = True
-            return
+        send_json_request(ws, json)
 
-        @timeout_decorator.timeout(timeout if timeout != 0 else 10**-100)
-        def funcWaitForResponse():
+
+        #@timeout_decorator.timeout(timeout if timeout != 0 else 10**-100) | Removed for now as it causes problems
+        def funcWaitForResponse(identifier):
             while True:
-                response = ws.recv()
-                #print('\n'.join(difflib.ndiff([response], [lastResponse])))
-                if lastResponse != response:
-                    print("Not the same")
-                    return response
-
-        if waitForResponse:
-            try:
-                self.text = funcWaitForResponse()
-
-                lastResponse = self.text
-            except timeout_decorator.timeout_decorator.TimeoutError:
-                self.text = "RequestsWS | Error #2: request timed out"
-                self.Error = True
-                return
-
-
-        dataFormatted = JSON.dumps(data) if type(data) == dict else data if data != None else JSON.dumps(json)
-
-        if waitForResponse:
-            ws.send(dataFormatted)
-            self.text = ws.recv()
+                response = recieve_json_response(ws)
+                if response:
+                    if identifier != None:
+                        for identifierKey, identifierValue in identifier.items():
+                            key = identifierKey
+                            value = identifierValue
+                        if response[key] == value:
+                            return response
+                    else:
+                        return response
+        self.text = funcWaitForResponse(identifier)
 
     def json(self):
-        if not self.Error:
-            return JSON.loads(self.text)
-        else:
-            return {"ERROR_MESSAGE": self.text}
+        return self.text
 
-def keepWSConnection(wsUrl, interval, payload, ws):
-    while True:
-        if wsData["CURRENT_URL"] == wsUrl:
-            time.sleep(interval)
-            ws.send(payload)
-        else:
-            print("New website, stopping the pings")
+def isRunning(wsUrl):
+    response = True
+    try:
+        connectionsKept[wsUrl]
+    except Exception:
+        response = False
 
-class keepConnection:
-    def __init__(self, wsUrl, interval, data=None, json=None):
-        if data == None and json == None:
-            self.text = "RequestsWS | Error #1: data or json is needed"
-            self.Error = True
-            return
+    return response
 
-        dataFormatted = JSON.dumps(data) if type(data) == dict else data if data != None else JSON.dumps(json)
-        threading._start_new_thread(keepConnection, (wsUrl, interval, dataFormatted, ws))
+def heartbeat(wsUrl, interval, payload):
+    time.sleep(interval)
+    while isRunning(wsUrl):
+        heartbeatJSON = payload
+        send_json_request(ws, heartbeatJSON)
+        time.sleep(interval)
+
+def keepConnection(wsUrl, interval, json):
+    connectionsKept.append(wsUrl)
+    threading._start_new_thread(heartbeat, (wsUrl, interval, json))
+
+def closeConnection(wsUrl):
+    connectionsKept.remove(wsUrl)
+    time.cancel()
+    ws.close()
