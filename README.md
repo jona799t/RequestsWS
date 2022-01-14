@@ -21,5 +21,8 @@ payload = {
 requestsWS.keepConnection('ws://localhost:8765', interval=20, json=payload)
 ```
 
+# TO DO
+Multiple connections at once (Use array instead of string)
+
 # Documentation
 Comming soon!
