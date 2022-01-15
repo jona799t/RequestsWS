@@ -5,77 +5,95 @@ import threading
 from cancelable import time
 import timeout_decorator
 
-
-def send_json_request(ws, request):
-    ws.send(JSON.dumps(request))
-
-
-def recieve_json_response(ws):
-    response = ws.recv()
-    if response:
-        return JSON.loads(response)
-
 ws = None
 wsData = {"CURRENT_URL": None}
 
 connectionsKept = []
 
 class get:
-    def __init__(self, wsUrl, identifier=None, timeout=None):
+    def __init__(self, wsUrl, identifiers=None, timeout=None, debug=False):
         global ws
-        self.Error = False
         if wsUrl != wsData["CURRENT_URL"]:
             wsData["CURRENT_URL"] = wsUrl
             ws = create_connection(wsUrl)
 
-        if identifier != None:
-            for identifierKey, identifierValue in identifier.items():
-                key = identifierKey
-                value = identifierValue
-
         #@timeout_decorator.timeout(timeout if timeout != 0 else 10**-100) | Removed for now as it causes problems
-        def funcWaitForResponse(identifier):
+        def funcWaitForResponse(identifiers):
+            if debug:
+                while True:
+                    response = ws.recv()
+                    print(response)
             while True:
                 response = ws.recv()
                 if response:
-                    if identifier != None:
-                        if JSON.loads(response)[key] == value:
+                    if identifiers != None:
+                        identifiersInIt = True
+                        for i in range(len(identifiers)):
+                            key, value = identifiers.popitem()
+                            try:
+                                if JSON.loads(response)[key] == value and identifiersInIt:
+                                    identifiersInIt = True
+                                else:
+                                    identifiersInIt = False
+                            except Exception:
+                                identifiersInIt = False
+
+                        if identifiersInIt:
                             return response
                     else:
                         return response
-        self.text = funcWaitForResponse(identifier)
+        self.text = funcWaitForResponse(identifiers)
+        self.status_code = 200
 
     def json(self):
         return JSON.loads(self.text)
 
 class post:
-    def __init__(self, wsUrl, json, identifier=None, timeout=None):
+    def __init__(self, wsUrl, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
         global ws
-        self.Error = False
+
+        if data == None and json == None:
+            exit("RequestsWS | Error #1: Data or json is needed")
+
         if wsUrl != wsData["CURRENT_URL"]:
             wsData["CURRENT_URL"] = wsUrl
             ws = create_connection(wsUrl)
 
-        send_json_request(ws, json)
-
+        dataFormatted = JSON.dumps(data) if type(data) == dict else data if data != None else JSON.dumps(json)
+        ws.send(dataFormatted)
+        self.status_code = 200
 
         #@timeout_decorator.timeout(timeout if timeout != 0 else 10**-100) | Removed for now as it causes problems
-        def funcWaitForResponse(identifier):
+        def funcWaitForResponse(identifiers):
+            if debug:
+                while True:
+                    response = ws.recv()
+                    print(response)
             while True:
-                response = recieve_json_response(ws)
+                response = ws.recv()
                 if response:
-                    if identifier != None:
-                        for identifierKey, identifierValue in identifier.items():
-                            key = identifierKey
-                            value = identifierValue
-                        if response[key] == value:
+                    if identifiers != None:
+                        identifiersInIt = True
+                        for i in range(len(identifiers)):
+                            key, value = identifiers.popitem()
+                            try:
+                                if JSON.loads(response)[key] == value and identifiersInIt:
+                                    identifiersInIt = True
+                                else:
+                                    identifiersInIt = False
+                            except Exception:
+                                identifiersInIt = False
+
+                        if identifiersInIt:
                             return response
                     else:
                         return response
-        self.text = funcWaitForResponse(identifier)
+
+        if waitForResponse:
+            self.text = funcWaitForResponse(identifiers)
 
     def json(self):
-        return self.text
+        return JSON.loads(self.text)
 
 def isRunning(wsUrl):
     response = True
@@ -89,15 +107,19 @@ def isRunning(wsUrl):
 def heartbeat(wsUrl, interval, payload):
     time.sleep(interval)
     while isRunning(wsUrl):
-        heartbeatJSON = payload
-        send_json_request(ws, heartbeatJSON)
+        ws.send(payload)
         time.sleep(interval)
 
-def keepConnection(wsUrl, interval, json):
+def keepConnection(wsUrl, interval, data=None, json=None):
+    if data == None and json == None:
+        exit("RequestsWS | Error #1: Data or json is needed")
+
+    dataFormatted = JSON.dumps(data) if type(data) == dict else data if data != None else JSON.dumps(json)
     connectionsKept.append(wsUrl)
-    threading._start_new_thread(heartbeat, (wsUrl, interval, json))
+    threading._start_new_thread(heartbeat, (wsUrl, interval, dataFormatted))
 
 def closeConnection(wsUrl):
+    wsData["CURRENT_URL"] = None
     connectionsKept.remove(wsUrl)
     time.cancel()
     ws.close()
