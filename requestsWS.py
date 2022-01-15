@@ -17,6 +17,14 @@ class get:
             wsData["CURRENT_URL"] = wsUrl
             ws = create_connection(wsUrl)
 
+        keys = []
+        values = []
+        for i in range(len(identifiers)):
+            key, value = identifiers.popitem()
+            keys.append(key)
+            values.append(value)
+
+
         #@timeout_decorator.timeout(timeout if timeout != 0 else 10**-100) | Removed for now as it causes problems
         def funcWaitForResponse(identifiers):
             if debug:
@@ -28,16 +36,14 @@ class get:
                 if response:
                     if identifiers != None:
                         identifiersInIt = True
-                        for i in range(len(identifiers)):
-                            key, value = identifiers.popitem()
+                        for i in range(len(keys)):
                             try:
-                                if JSON.loads(response)[key] == value and identifiersInIt:
+                                if JSON.loads(response)[keys[i]] == values[i] and identifiersInIt:
                                     identifiersInIt = True
                                 else:
                                     identifiersInIt = False
                             except Exception:
                                 identifiersInIt = False
-
                         if identifiersInIt:
                             return response
                     else:
@@ -63,6 +69,14 @@ class post:
         ws.send(dataFormatted)
         self.status_code = 200
 
+        keys = []
+        values = []
+        for i in range(len(identifiers)):
+            key, value = identifiers.popitem()
+            keys.append(key)
+            values.append(value)
+
+
         #@timeout_decorator.timeout(timeout if timeout != 0 else 10**-100) | Removed for now as it causes problems
         def funcWaitForResponse(identifiers):
             if debug:
@@ -74,16 +88,14 @@ class post:
                 if response:
                     if identifiers != None:
                         identifiersInIt = True
-                        for i in range(len(identifiers)):
-                            key, value = identifiers.popitem()
+                        for i in range(len(keys)):
                             try:
-                                if JSON.loads(response)[key] == value and identifiersInIt:
+                                if JSON.loads(response)[keys[i]] == values[i] and identifiersInIt:
                                     identifiersInIt = True
                                 else:
                                     identifiersInIt = False
                             except Exception:
                                 identifiersInIt = False
-
                         if identifiersInIt:
                             return response
                     else:
