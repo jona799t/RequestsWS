@@ -2,7 +2,7 @@ from websocket import create_connection
 import json as JSON
 
 import threading
-from cancelable import time
+from utils.cancelable import time
 import timeout_decorator
 
 ws = None
@@ -19,10 +19,11 @@ class get:
 
         keys = []
         values = []
-        for i in range(len(identifiers)):
-            key, value = identifiers.popitem()
-            keys.append(key)
-            values.append(value)
+        if identifiers != None:
+            for i in range(len(identifiers)):
+                key, value = identifiers.popitem()
+                keys.append(key)
+                values.append(value)
 
 
         #@timeout_decorator.timeout(timeout if timeout != 0 else 10**-100) | Removed for now as it causes problems
@@ -71,10 +72,11 @@ class post:
 
         keys = []
         values = []
-        for i in range(len(identifiers)):
-            key, value = identifiers.popitem()
-            keys.append(key)
-            values.append(value)
+        if identifiers != None:
+            for i in range(len(identifiers)):
+                key, value = identifiers.popitem()
+                keys.append(key)
+                values.append(value)
 
 
         #@timeout_decorator.timeout(timeout if timeout != 0 else 10**-100) | Removed for now as it causes problems
