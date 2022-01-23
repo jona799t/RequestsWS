@@ -2,7 +2,7 @@ from websocket import create_connection
 import json as JSON
 
 import threading
-from cancelable import time
+from utils.cancelable import time
 import timeout_decorator
 
 ws = None
@@ -134,6 +134,9 @@ def keepConnection(wsUrl, interval, data=None, json=None):
 
 def closeConnection(wsUrl):
     wsData["CURRENT_URL"] = None
-    connectionsKept.remove(wsUrl)
+    try:
+        connectionsKept.remove(wsUrl)
+    except Exception:
+        pass
     time.cancel()
     ws.close()
