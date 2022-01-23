@@ -2,7 +2,7 @@ from websocket import create_connection
 import json as JSON
 
 import threading
-from utils.cancelable import time
+from cancelable import time
 import timeout_decorator
 
 ws = None
