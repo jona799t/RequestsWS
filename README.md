@@ -27,7 +27,8 @@ print(resp.json())
 ```
 
 # TO DO
-   - Multiple connections at once (Use array instead of string)  
+   - Multiple connections at once (Use array instead of string)
+   - Sessions  
    - Add headers for opening connections  
    - Add support for identifiers that are deeper into the json  
    - Add string support for identifier (Check if identifier in string)  
