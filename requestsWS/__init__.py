@@ -1,4 +1,5 @@
 from requestsWS.session import Session
+from requestsWS import misc
 from websocket import create_connection
 import json as JSON
 
@@ -12,7 +13,7 @@ wsData = {"CURRENT_URL": None}
 connectionsKept = []
 
 class get:
-    def __init__(self, wsUrl, headers=None, identifiers=None, timeout=None, debug=False):
+    def __init__(self, wsUrl, headers=None, encryption=None, identifiers=None, timeout=None, debug=False):
         global ws
         if wsUrl != wsData["CURRENT_URL"]:
             wsData["CURRENT_URL"] = wsUrl
@@ -31,10 +32,10 @@ class get:
         def funcWaitForResponse(identifiers):
             if debug:
                 while True:
-                    response = ws.recv()
+                    response = misc.decompress(ws.recv(), encryption)
                     print(response)
             while True:
-                response = ws.recv()
+                response = misc.decompress(ws.recv(), encryption)
                 if response:
                     if identifiers != None:
                         identifiersInIt = True
@@ -57,7 +58,7 @@ class get:
         return JSON.loads(self.text)
 
 class post:
-    def __init__(self, wsUrl, headers=None, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
+    def __init__(self, wsUrl, headers=None, encryption=None, data=None, json=None, identifiers=None, waitForResponse=True, timeout=None, debug=False):
         global ws
 
         if data == None and json == None:
@@ -84,10 +85,10 @@ class post:
         def funcWaitForResponse(identifiers):
             if debug:
                 while True:
-                    response = ws.recv()
+                    response = misc.decompress(ws.recv(), encryption)
                     print(response)
             while True:
-                response = ws.recv()
+                response = misc.decompress(ws.recv(), encryption)
                 if response:
                     if identifiers != None:
                         identifiersInIt = True

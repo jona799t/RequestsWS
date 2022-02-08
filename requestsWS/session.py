@@ -1,4 +1,5 @@
 from websocket import create_connection
+from requestsWS import misc
 import json as JSON
 
 import threading
@@ -14,7 +15,7 @@ class formatCorrectly:
         return JSON.loads(self.text)
 
 class _get:
-    def __init__(self, ws, wsUrl, wsData, headers=None, identifiers=None, timeout=None, debug=False):
+    def __init__(self, ws, wsUrl, wsData, headers=None, encryption=None, identifiers=None, timeout=None, debug=False):
         if wsUrl != wsData["CURRENT_URL"]:
             wsData["CURRENT_URL"] = wsUrl
             ws = create_connection(wsUrl, header=headers) #Måske kan den ikke være None
@@ -32,10 +33,10 @@ class _get:
         def funcWaitForResponse(identifiers):
             if debug:
                 while True:
-                    response = ws.recv()
+                    response = misc.decompress(ws.recv(), encryption)
                     print(response)
             while True:
-                response = ws.recv()
+                response = misc.decompress(ws.recv(), encryption)
                 if response:
                     if identifiers != None:
                         identifiersInIt = True
@@ -58,7 +59,7 @@ class _get:
         self.wsData = wsData
 
 class _post:
-    def __init__(self, ws, wsUrl, wsData, headers=None, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
+    def __init__(self, ws, wsUrl, wsData, headers=None, encryption=None, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
         if data == None and json == None:
             exit("RequestsWS | Error #1: Data or json is needed")
 
@@ -83,10 +84,10 @@ class _post:
         def funcWaitForResponse(identifiers):
             if debug:
                 while True:
-                    response = ws.recv()
+                    response = misc.decompress(ws.recv(), encryption)
                     print(response)
             while True:
-                response = ws.recv()
+                response = misc.decompress(ws.recv(), encryption)
                 if response:
                     if identifiers != None:
                         identifiersInIt = True

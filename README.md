@@ -28,16 +28,11 @@ print(resp.json())
 ```
 
 # TO DO
-   - Multiple connections at once (Use array instead of string)
-   - Sessions  
-   - Add headers for opening connections  
-   - Add support for identifiers that are deeper into the json  
-<<<<<<< HEAD
+   - Multiple connections at once (Use array instead of string), until then use Sessions
+   - Add support for identifiers that are deeper into the json
    - Add string support for identifier (Check if identifier in string)
-=======
    - Add string support for identifier (Check if identifier in string)  
    - Fix timeout  
->>>>>>> 23529901e18236d432c2b1f80288abbdf808b368
 
 # Documentation
 Coming soon!
