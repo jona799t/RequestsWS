@@ -1,10 +1,22 @@
+Metadata-Version: 2.1
+Name: requestsWS
+Version: 0.0.1
+Summary: The Requests like WS module
+Home-page: https://github.com/jona799t/RequestsWS
+Author: jona799t
+License: UNKNOWN
+Keywords: python,requests,websocket
+Platform: UNKNOWN
+Classifier: Development Status :: 1 - Planning
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: Unix
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: Microsoft :: Windows
+Description-Content-Type: text/markdown
+
 # RequestsWS
 The Requests like WS module
-
-# Installation
-```
-pip install requestsWS
-```
 
 # Usage
 ```python
@@ -34,3 +46,5 @@ print(resp.json())
 
 # Documentation
 Coming soon!
+
+
