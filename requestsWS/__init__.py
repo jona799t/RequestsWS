@@ -12,11 +12,11 @@ wsData = {"CURRENT_URL": None}
 connectionsKept = []
 
 class get:
-    def __init__(self, wsUrl, identifiers=None, timeout=None, debug=False):
+    def __init__(self, wsUrl, headers=None, identifiers=None, timeout=None, debug=False):
         global ws
         if wsUrl != wsData["CURRENT_URL"]:
             wsData["CURRENT_URL"] = wsUrl
-            ws = create_connection(wsUrl)
+            ws = create_connection(wsUrl, header=headers) #Måske kan den ikke være None
 
         keys = []
         values = []
@@ -57,7 +57,7 @@ class get:
         return JSON.loads(self.text)
 
 class post:
-    def __init__(self, wsUrl, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
+    def __init__(self, wsUrl, headers=None, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
         global ws
 
         if data == None and json == None:
@@ -65,7 +65,7 @@ class post:
 
         if wsUrl != wsData["CURRENT_URL"]:
             wsData["CURRENT_URL"] = wsUrl
-            ws = create_connection(wsUrl)
+            ws = create_connection(wsUrl, header=headers) #Måske kan den ikke være None
 
         dataFormatted = JSON.dumps(data) if type(data) == dict else data if data != None else JSON.dumps(json)
         ws.send(dataFormatted)

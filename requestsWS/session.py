@@ -14,10 +14,10 @@ class formatCorrectly:
         return JSON.loads(self.text)
 
 class _get:
-    def __init__(self, ws, wsUrl, wsData, identifiers=None, timeout=None, debug=False):
+    def __init__(self, ws, wsUrl, wsData, headers=None, identifiers=None, timeout=None, debug=False):
         if wsUrl != wsData["CURRENT_URL"]:
             wsData["CURRENT_URL"] = wsUrl
-            ws = create_connection(wsUrl)
+            ws = create_connection(wsUrl, header=headers) #Måske kan den ikke være None
 
         keys = []
         values = []
@@ -58,13 +58,13 @@ class _get:
         self.wsData = wsData
 
 class _post:
-    def __init__(self, ws, wsUrl, wsData, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
+    def __init__(self, ws, wsUrl, wsData, headers=None, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
         if data == None and json == None:
             exit("RequestsWS | Error #1: Data or json is needed")
 
         if wsUrl != wsData["CURRENT_URL"]:
             wsData["CURRENT_URL"] = wsUrl
-            ws = create_connection(wsUrl)
+            ws = create_connection(wsUrl, header=headers) #Måske kan den ikke være None
 
         dataFormatted = JSON.dumps(data) if type(data) == dict else data if data != None else JSON.dumps(json)
         ws.send(dataFormatted)
@@ -116,15 +116,15 @@ class Session:
 
         self.connectionsKept = []
 
-    def get(self, wsUrl, identifiers=None, timeout=None, debug=False):
-        resp = _get(ws=self.ws, wsUrl=wsUrl, wsData=self.wsData, identifiers=identifiers, timeout=timeout, debug=debug)
+    def get(self, wsUrl, headers=None, identifiers=None, timeout=None, debug=False):
+        resp = _get(ws=self.ws, wsUrl=wsUrl, wsData=self.wsData, headers=headers, identifiers=identifiers, timeout=timeout, debug=debug)
         self.ws = resp.ws
         self.wsData = resp.wsData
 
         return formatCorrectly(resp.text, resp.status_code)
 
-    def post(self, wsUrl, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
-        resp = _post(ws=self.ws, wsUrl=wsUrl, wsData=self.wsData, data=data, json=json, waitForResponse=waitForResponse, identifiers=identifiers, timeout=timeout, debug=debug)
+    def post(self, wsUrl, headers=None, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
+        resp = _post(ws=self.ws, wsUrl=wsUrl, wsData=self.wsData, headers=headers, data=data, json=json, waitForResponse=waitForResponse, identifiers=identifiers, timeout=timeout, debug=debug)
         self.ws = resp.ws
         self.wsData = resp.wsData
 
