@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: requestsWS
-Version: 0.0.1
+Version: 0.0.2
 Summary: The Requests like WS module
 Home-page: https://github.com/jona799t/RequestsWS
 Author: jona799t
@@ -17,6 +17,11 @@ Description-Content-Type: text/markdown
 
 # RequestsWS
 The Requests like WS module
+
+# Installation
+```
+pip install requestsWS
+```
 
 # Usage
 ```python
@@ -42,7 +47,7 @@ print(resp.json())
    - Multiple connections at once (Use array instead of string)  
    - Add headers for opening connections  
    - Add support for identifiers that are deeper into the json  
-   - Add string support for identifier (Check if identifier in string)  
+   - Add string support for identifier (Check if identifier in string)
 
 # Documentation
 Coming soon!

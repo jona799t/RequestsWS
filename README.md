@@ -7,6 +7,7 @@ pip install requestsWS
 ```
 
 # Usage
+Sessions is not documented yet, but it works like requests
 ```python
 import requestsWS
 

@@ -1,4 +1,3 @@
-from requestsWS.session import Session
 from websocket import create_connection
 import json as JSON
 
@@ -6,14 +5,16 @@ import threading
 from cancelable import time
 import timeout_decorator
 
-ws = None
-wsData = {"CURRENT_URL": None}
+class formatCorrectly:
+    def __init__(self, text=None, status_code=None):
+        self.text = text
+        self.status_code = status_code
 
-connectionsKept = []
+    def json(self):
+        return JSON.loads(self.text)
 
-class get:
-    def __init__(self, wsUrl, identifiers=None, timeout=None, debug=False):
-        global ws
+class _get:
+    def __init__(self, ws, wsUrl, wsData, identifiers=None, timeout=None, debug=False):
         if wsUrl != wsData["CURRENT_URL"]:
             wsData["CURRENT_URL"] = wsUrl
             ws = create_connection(wsUrl)
@@ -53,13 +54,11 @@ class get:
         self.text = funcWaitForResponse(identifiers)
         self.status_code = 200
 
-    def json(self):
-        return JSON.loads(self.text)
+        self.ws = ws
+        self.wsData = wsData
 
-class post:
-    def __init__(self, wsUrl, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
-        global ws
-
+class _post:
+    def __init__(self, ws, wsUrl, wsData, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
         if data == None and json == None:
             exit("RequestsWS | Error #1: Data or json is needed")
 
@@ -107,34 +106,54 @@ class post:
         if waitForResponse:
             self.text = funcWaitForResponse(identifiers)
 
-    def json(self):
-        return JSON.loads(self.text)
+        self.ws = ws
+        self.wsData = wsData
 
+class Session:
+    def __init__(self, proxies=None, timeout=None):
+        self.ws = None
+        self.wsData = {"CURRENT_URL": None}
 
-def isRunning(wsUrl):
-    if wsUrl in connectionsKept:
-        return True
-    return False
+        self.connectionsKept = []
 
-def heartbeat(wsUrl, interval, payload):
-    time.sleep(interval)
-    while isRunning(wsUrl):
-        ws.send(payload)
+    def get(self, wsUrl, identifiers=None, timeout=None, debug=False):
+        resp = _get(ws=self.ws, wsUrl=wsUrl, wsData=self.wsData, identifiers=identifiers, timeout=timeout, debug=debug)
+        self.ws = resp.ws
+        self.wsData = resp.wsData
+
+        return formatCorrectly(resp.text, resp.status_code)
+
+    def post(self, wsUrl, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
+        resp = _post(ws=self.ws, wsUrl=wsUrl, wsData=self.wsData, data=data, json=json, waitForResponse=waitForResponse, identifiers=identifiers, timeout=timeout, debug=debug)
+        self.ws = resp.ws
+        self.wsData = resp.wsData
+
+        return formatCorrectly(resp.text, resp.status_code)
+
+    def isRunning(self, wsUrl):
+        if wsUrl in self.connectionsKept:
+            return True
+        return False
+
+    def heartbeat(self, wsUrl, interval, payload):
         time.sleep(interval)
+        while self.isRunning(wsUrl):
+            self.ws.send(payload)
+            time.sleep(interval)
 
-def keepConnection(wsUrl, interval, data=None, json=None):
-    if data == None and json == None:
-        exit("RequestsWS | Error #1: Data or json is needed")
+    def keepConnection(self, wsUrl, interval, data=None, json=None):
+        if data == None and json == None:
+            exit("RequestsWS | Error #1: Data or json is needed")
 
-    dataFormatted = JSON.dumps(data) if type(data) == dict else data if data != None else JSON.dumps(json)
-    connectionsKept.append(wsUrl)
-    threading._start_new_thread(heartbeat, (wsUrl, interval, dataFormatted))
+        dataFormatted = JSON.dumps(data) if type(data) == dict else data if data != None else JSON.dumps(json)
+        self.connectionsKept.append(wsUrl)
+        threading._start_new_thread(self.heartbeat, (wsUrl, interval, dataFormatted))
 
-def closeConnection(wsUrl):
-    wsData["CURRENT_URL"] = None
-    try:
-        connectionsKept.remove(wsUrl)
-    except Exception:
-        pass
-    time.cancel()
-    ws.close()
+    def closeConnection(self, wsUrl):
+        self.wsData["CURRENT_URL"] = None
+        try:
+            self.connectionsKept.remove(wsUrl)
+        except Exception:
+            pass
+        time.cancel()
+        self.ws.close()
