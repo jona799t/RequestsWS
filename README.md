@@ -30,7 +30,7 @@ print(resp.json())
    - Multiple connections at once (Use array instead of string)  
    - Add headers for opening connections  
    - Add support for identifiers that are deeper into the json  
-   - Add string support for identifier (Check if identifier in string)  
+   - Add string support for identifier (Check if identifier in string)
 
 # Documentation
 Coming soon!
