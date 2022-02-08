@@ -117,15 +117,15 @@ class Session:
 
         self.connectionsKept = []
 
-    def get(self, wsUrl, headers=None, identifiers=None, timeout=None, debug=False):
-        resp = _get(ws=self.ws, wsUrl=wsUrl, wsData=self.wsData, headers=headers, identifiers=identifiers, timeout=timeout, debug=debug)
+    def get(self, wsUrl, headers=None, encryption=None, identifiers=None, timeout=None, debug=False):
+        resp = _get(ws=self.ws, wsUrl=wsUrl, wsData=self.wsData, headers=headers, encryption=encryption, identifiers=identifiers, timeout=timeout, debug=debug)
         self.ws = resp.ws
         self.wsData = resp.wsData
 
         return formatCorrectly(resp.text, resp.status_code)
 
-    def post(self, wsUrl, headers=None, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
-        resp = _post(ws=self.ws, wsUrl=wsUrl, wsData=self.wsData, headers=headers, data=data, json=json, waitForResponse=waitForResponse, identifiers=identifiers, timeout=timeout, debug=debug)
+    def post(self, wsUrl, headers=None, encryption=None, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
+        resp = _post(ws=self.ws, wsUrl=wsUrl, wsData=self.wsData, headers=headers, encryption=encryption, data=data, json=json, waitForResponse=waitForResponse, identifiers=identifiers, timeout=timeout, debug=debug)
         self.ws = resp.ws
         self.wsData = resp.wsData
 
