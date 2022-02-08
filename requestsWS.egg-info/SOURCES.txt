@@ -1,8 +1,0 @@
-README.md
-setup.py
-requestsWS/__init__.py
-requestsWS.egg-info/PKG-INFO
-requestsWS.egg-info/SOURCES.txt
-requestsWS.egg-info/dependency_links.txt
-requestsWS.egg-info/requires.txt
-requestsWS.egg-info/top_level.txt

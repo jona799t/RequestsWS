@@ -1,2 +1,0 @@
-cancelable-py
-websocket-client
