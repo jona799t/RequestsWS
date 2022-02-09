@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 from pathlib import Path
 
-VERSION = '0.0.5'
+VERSION = '0.0.6'
 DESCRIPTION = 'The Requests like WS module'
 long_description = (Path(__file__).parent / "README.md").read_text()
 

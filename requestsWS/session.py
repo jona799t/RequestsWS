@@ -129,7 +129,8 @@ class Session:
         self.ws = resp.ws
         self.wsData = resp.wsData
 
-        return formatCorrectly(resp.text, resp.status_code)
+        if waitForResponse:
+            return formatCorrectly(resp.text, resp.status_code)
 
     def isRunning(self, wsUrl):
         if wsUrl in self.connectionsKept:

@@ -20,10 +20,10 @@ print(resp.text)
 payload = {
     "method": "server.ping"
 }
-requestsWS.keepConnection('ws://localhost:8765', interval=20, json=payload)
+requestsWS.keepConnection('wss://localhost:8765', interval=20, json=payload)
 
 payload = "hello world"
-resp = requestsWS.post("ws://localhost:8765", data=payload)
+resp = requestsWS.post("wss://localhost:8765", data=payload)
 print(resp.json())
 ```
 
