@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 from pathlib import Path
 
-VERSION = '0.0.6'
+VERSION = '0.0.8'
 DESCRIPTION = 'The Requests like WS module'
 long_description = (Path(__file__).parent / "README.md").read_text()
 
@@ -17,7 +17,7 @@ setup(
     license_files = ('LICENSE.txt',),
     long_description_content_type='text/markdown',
     packages=find_packages(),
-    install_requires=["cancelable-py", "websocket-client"],
+    install_requires=["cancelable", "websocket-client"],
     keywords=['python', 'requests', 'websocket'],
     classifiers=[
         "Development Status :: 1 - Planning",
