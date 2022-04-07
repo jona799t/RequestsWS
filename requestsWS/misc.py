@@ -1,10 +1,10 @@
 import gzip
 import zlib
 
-_zlib = zlib.decompressobj()
 def decompress(message, encryption):
     if type(encryption) == str:
         if encryption.lower() == "zlib":
+            _zlib = zlib.decompressobj()
             return _zlib.decompress(message).decode("utf-8")
         elif encryption.lower() == "gzip":
             return str(gzip.decompress(message), encoding="utf8")

@@ -18,7 +18,10 @@ class _get:
     def __init__(self, ws, wsUrl, wsData, headers=None, encryption=None, identifiers=None, timeout=None, debug=False):
         if wsUrl != wsData["CURRENT_URL"]:
             wsData["CURRENT_URL"] = wsUrl
-            ws = create_connection(wsUrl, header=headers) #Måske kan den ikke være None
+            if headers == None:
+                ws = create_connection(wsUrl)
+            else:
+                ws = create_connection(wsUrl, header=headers)
 
         keys = []
         values = []
@@ -65,7 +68,10 @@ class _post:
 
         if wsUrl != wsData["CURRENT_URL"]:
             wsData["CURRENT_URL"] = wsUrl
-            ws = create_connection(wsUrl, header=headers) #Måske kan den ikke være None
+            if headers == None:
+                ws = create_connection(wsUrl)
+            else:
+                ws = create_connection(wsUrl, header=headers)
 
         dataFormatted = JSON.dumps(data) if type(data) == dict else data if data != None else JSON.dumps(json)
         ws.send(dataFormatted)
