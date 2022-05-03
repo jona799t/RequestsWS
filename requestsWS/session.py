@@ -18,10 +18,7 @@ class _get:
     def __init__(self, ws, wsUrl, wsData, headers=None, encryption=None, identifiers=None, timeout=None, debug=False):
         if wsUrl != wsData["CURRENT_URL"]:
             wsData["CURRENT_URL"] = wsUrl
-            if headers == None:
-                ws = create_connection(wsUrl)
-            else:
-                ws = create_connection(wsUrl, header=headers)
+            ws = create_connection(wsUrl, header=headers, enable_multithread=True)
 
         keys = []
         values = []
