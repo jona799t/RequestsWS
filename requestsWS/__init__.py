@@ -17,10 +17,7 @@ class get:
         global ws
         if wsUrl != wsData["CURRENT_URL"]:
             wsData["CURRENT_URL"] = wsUrl
-            if headers == None:
-                ws = create_connection(wsUrl)
-            else:
-                ws = create_connection(wsUrl, header=headers)
+            ws = create_connection(wsUrl, header=headers, enable_multithread=True)
 
         keys = []
         values = []
@@ -69,10 +66,7 @@ class post:
 
         if wsUrl != wsData["CURRENT_URL"]:
             wsData["CURRENT_URL"] = wsUrl
-            if headers == None:
-                ws = create_connection(wsUrl)
-            else:
-                ws = create_connection(wsUrl, header=headers)
+            ws = create_connection(wsUrl, header=headers, enable_multithread=True)
 
         dataFormatted = JSON.dumps(data) if type(data) == dict else data if data != None else JSON.dumps(json)
         ws.send(dataFormatted)
