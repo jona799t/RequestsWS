@@ -139,9 +139,12 @@ class Session:
 
     def heartbeat(self, wsUrl, interval, payload):
         time.sleep(interval)
-        while self.isRunning(wsUrl):
-            self.ws.send(payload)
-            time.sleep(interval)
+        try:
+            while self.isRunning(wsUrl):
+                self.ws.send(payload)
+                time.sleep(interval)
+        except BrokenPipeError:
+            self.closeConnection(wsUrl)
 
     def keepConnection(self, wsUrl, interval, data=None, json=None):
         if data == None and json == None:
