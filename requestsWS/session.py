@@ -15,7 +15,7 @@ class formatCorrectly:
         return JSON.loads(self.text)
 
 class _get:
-    def __init__(self, ws, wsUrl, wsData, headers=None, encryption=None, identifiers=None, timeout=None, debug=False):
+    def __init__(self, ws, wsUrl, wsData, headers={}, encryption=None, identifiers=None, timeout=None, debug=False):
         if wsUrl != wsData["CURRENT_URL"]:
             wsData["CURRENT_URL"] = wsUrl
             ws = create_connection(wsUrl, header=headers, enable_multithread=True)
@@ -59,7 +59,7 @@ class _get:
         self.wsData = wsData
 
 class _post:
-    def __init__(self, ws, wsUrl, wsData, headers=None, encryption=None, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
+    def __init__(self, ws, wsUrl, wsData, headers={}, encryption=None, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
         if data == None and json == None:
             exit("RequestsWS | Error #1: Data or json is needed")
 
@@ -117,14 +117,14 @@ class Session:
 
         self.connectionsKept = []
 
-    def get(self, wsUrl, headers=None, encryption=None, identifiers=None, timeout=None, debug=False):
+    def get(self, wsUrl, headers={}, encryption=None, identifiers=None, timeout=None, debug=False):
         resp = _get(ws=self.ws, wsUrl=wsUrl, wsData=self.wsData, headers=headers, encryption=encryption, identifiers=identifiers, timeout=timeout, debug=debug)
         self.ws = resp.ws
         self.wsData = resp.wsData
 
         return formatCorrectly(resp.text, resp.status_code)
 
-    def post(self, wsUrl, headers=None, encryption=None, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
+    def post(self, wsUrl, headers={}, encryption=None, data=None, json=None, waitForResponse=True, identifiers=None, timeout=None, debug=False):
         resp = _post(ws=self.ws, wsUrl=wsUrl, wsData=self.wsData, headers=headers, encryption=encryption, data=data, json=json, waitForResponse=waitForResponse, identifiers=identifiers, timeout=timeout, debug=debug)
         self.ws = resp.ws
         self.wsData = resp.wsData
